@@ -1,0 +1,4 @@
+*.tar
+image_test/
+__pycache__/
+
