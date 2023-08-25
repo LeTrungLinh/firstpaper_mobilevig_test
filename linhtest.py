@@ -7,6 +7,7 @@ import torch
 import torch.backends.cudnn as cudnn
 import json
 from pathlib import Path
+from linh_function import *
 
 from timm.data import Mixup
 from timm.models import create_model
@@ -195,8 +196,6 @@ def get_args_parser():
 def main(args):
     utils.init_distributed_mode(args)
 
-    print(args)
-
     if args.distillation_type != 'none' and args.finetune and not args.eval:
         raise NotImplementedError(
             "Finetuning with distillation not yet supported")
@@ -215,10 +214,9 @@ def main(args):
         pretrained=args.eval,
         fuse=args.eval,
     )
-    # print(model.backbone[-1])
-    # a
     
-    checkpoint = torch.load('./MobileViG_B_82_6.pth.tar', map_location='cpu')
+    checkpoint_path = 'MobileViG_B_82_6.pth.tar' if args.model == 'mobilevig_b' else 'MobileViG_S_78_2.pth.tar'
+    checkpoint = torch.load(f'./{checkpoint_path}', map_location='cpu')
 
     checkpoint_model = checkpoint['state_dict']
     state_dict = model.state_dict()
@@ -234,40 +232,8 @@ def main(args):
     model.eval()
     target_layers = [model.backbone[-1]]
 
-    rgb_img = cv2.imread('./image_test/demo.jpg', 1)[:, :, ::-1]
-    rgb_img = np.float32(rgb_img) / 255
-    input_tensor = preprocess_image(rgb_img,
-                                    mean=[0.485, 0.456, 0.406],
-                                    std=[0.229, 0.224, 0.225])
+    visulize_feature('./image_test/demo.jpg', model = model, target_layers=target_layers)    
 
-    # We have to specify the target we want to generate
-    # the Class Activation Maps for.
-    # If targets is None, the highest scoring category (for every member in the batch) will be used.
-    # You can target specific categories by
-    # targets = [e.g ClassifierOutputTarget(281)]
-    targets = None
-
-    # Using the with statement ensures the context is freed, and you can
-    # recreate different CAM objects in a loop.
-    cam_algorithm = GradCAM
-    with cam_algorithm(model=model,
-                       target_layers=target_layers,
-                       use_cuda=False) as cam:
-
-
-        # AblationCAM and ScoreCAM have batched implementations.
-        # You can override the internal batch size for faster computation.
-        cam.batch_size = 32
-        grayscale_cam = cam(input_tensor=input_tensor,
-                            targets=targets,
-                            aug_smooth=True,
-                            eigen_smooth=True)
-
-        grayscale_cam = grayscale_cam[0, :]
-
-        cam_image = show_cam_on_image(rgb_img, grayscale_cam, use_rgb=True)
-        cam_image = cv2.cvtColor(cam_image, cv2.COLOR_RGB2BGR)
-        cv2.imwrite('./image_test/demo_result.jpg', cam_image)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
