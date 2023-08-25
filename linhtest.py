@@ -232,7 +232,7 @@ def main(args):
     model.eval()
     target_layers = [model.backbone[-1]]
 
-    visulize_feature('./image_test/demo.jpg', model = model, target_layers=target_layers)    
+    visualize_feature('./image_test/demo.jpg', model = model, target_layers=target_layers)    
 
 
 if __name__ == '__main__':

@@ -23,7 +23,14 @@ def deprocess_image(img):
     img = np.clip(img, 0, 1)
     return np.uint8(img * 255)
 
-def visulize_feature(img_file , model, target_layers):
+def visualize_feature(img_file , model, target_layers):
+    """ Visulize feature using gradcam
+        Function result will save image in same folder with image file
+    Args:
+        img_file (str): path to image file - "./image_test/demo.jpg"
+        model (object): model object
+        target_layers (_type_): final layer of backbone extract the feature of model
+    """
     targets = None
 
     # Read image and preprocess
