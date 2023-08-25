@@ -2,3 +2,4 @@
 image_test/
 __pycache__/
 
+*.pth
