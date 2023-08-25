@@ -48,3 +48,19 @@ def visulize_feature(img_file , model, target_layers):
             print("Successfull save image")
         else:
             print("Invalid file extension")
+    return input_tensor
+
+
+class SaveOutput:
+    # pytorch hook to visualize feature in every layer 
+    def __init__(self):
+        self.outputs = []
+        
+    def __call__(self, module, module_in, module_out):
+        self.outputs.append(module_out)
+        
+    def clear(self):
+        self.outputs = []
+    
+def module_output_to_numpy(tensor):
+    return tensor.detach().to('cpu').numpy()    

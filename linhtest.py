@@ -8,6 +8,7 @@ import torch.backends.cudnn as cudnn
 import json
 from pathlib import Path
 from linh_function import *
+import matplotlib.pyplot as plt
 
 from timm.data import Mixup
 from timm.models import create_model
@@ -232,7 +233,25 @@ def main(args):
     model.eval()
     target_layers = [model.backbone[-1]]
 
-    visulize_feature('./image_test/demo.jpg', model = model, target_layers=target_layers)    
+    input_img = visulize_feature('./image_test/demo.jpg', model = model, target_layers=target_layers)    
+
+    ##### pytorch hooks #####
+    save_output = SaveOutput()
+    hook_handles = []
+    for layer in model.modules():
+        if isinstance(layer, torch.nn.modules.conv.Conv2d):
+            handle = layer.register_forward_hook(save_output)
+            hook_handles.append(handle)
+   
+    output = model(input_img)
+
+    def module_output_to_numpy(tensor):
+        return tensor.detach().to('cpu').numpy()    
+
+    images = module_output_to_numpy(save_output.outputs[0])
+    
+    for i in range(len(images[0])):
+        cv2.imwrite(f'./image_test/feature_{i}.jpg', deprocess_image(images[0,i]))
 
 
 if __name__ == '__main__':
