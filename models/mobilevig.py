@@ -353,3 +353,14 @@ def mobilevig_b(pretrained=False, **kwargs):
                       num_classes=1000)
     model.default_cfg = default_cfgs['mobilevig']
     return model
+
+
+if __name__ == '__main__':
+    import torchsummary
+    # test model with (1, 3, 224, 224) input 
+    img = torch.randn(1, 3, 224, 224)
+    model = mobilevig_b()
+    torchsummary.summary(model, (3, 224, 224), device='cpu')
+    model.eval()
+    out = model(img)
+    print(out.shape)

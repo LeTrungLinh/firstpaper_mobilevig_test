@@ -231,7 +231,7 @@ def main(args):
 
     model.to(device)
     model.eval()
-    target_layers = [model.backbone[-1]]
+    target_layers = [model.backbone[0]]
 
     input_img = visulize_feature('./image_test/demo.jpg', model = model, target_layers=target_layers)    
 
@@ -249,7 +249,7 @@ def main(args):
         return tensor.detach().to('cpu').numpy()    
 
     images = module_output_to_numpy(save_output.outputs[0])
-    
+
     for i in range(len(images[0])):
         cv2.imwrite(f'./image_test/feature_{i}.jpg', deprocess_image(images[0,i]))
 
